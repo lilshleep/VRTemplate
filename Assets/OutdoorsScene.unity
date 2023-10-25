@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 2158.3013, g: 2261.19, b: 3281.3079, a: 1}
+  m_IndirectSpecularColor: {r: 2156.81, g: 2259.9849, b: 3280.3757, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -162,12 +162,24 @@ MonoBehaviour:
   - 0
   - +30
   - -30
-  currentTrial: 0
-  trials: 100
   stimuli:
   - Face1
   - Face2
   - Face3
+  instr: {fileID: 0}
+  trainingText: {fileID: 0}
+  instrTexts:
+  - "You will be reacting to three different faces in this protocol, and\r\n       
+    \\npressing the keys v, b, and n for each one. Please try to react to the\r\n       
+    \\nfaces and don't try to anticipate them. Press Spacebar when ready."
+  - This is Face 1. Press v to continue.
+  - This is Face 2. Press b to continue.
+  - This is Face 3. Press n to continue.
+  - "Here are some practice rounds to familiarize you with the protocol.\r\n       
+    \\nPress Spacebar to begin."
+  currentTrial: 0
+  trainingTrials: 10
+  trials: 20
   preCue_time: 0.5
   cue_time: 0.2
   time_min: 0.5
