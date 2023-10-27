@@ -7,16 +7,11 @@ using System;
 using TMPro;
 
 /* TODO
- * add demo sequence
- * add start screen
  * add high score list
- * add stimuli memorization
- * add practice run
- * add break
  */
 
 /* NEEDS
- * - to be bound to an object in the code
+ * - to be bound to one and only one object in the code
  * - all names in the first section of variables to be real objects
  *     - and match their case sensitive names
  * - a position to show participant text called textPos
@@ -31,8 +26,6 @@ public class StimControl : MonoBehaviour
     public string[] pos = { "deg0", "deg30", "deg-30" }; // different random positions available (Unity object names)
     public string[] ecc = { "0", "+30", "-30" }; // names to write to csv file, corresponding respectively to pos
     public string[] stimuli = { "Face1", "Face2", "Face3" }; // names of different stimuli
-    public GameObject instrText; // text object name used for instructions
-    public GameObject trainingText; // text object name used for training
 
     // self explanatory
     public string[] instrTextValues = {
@@ -70,12 +63,13 @@ public class StimControl : MonoBehaviour
     private bool in_use = false;    // avoid user clicking multiple buttons at same time
     private bool start = false;     // it's the first trial
     /*
-     * Phase -123 = in-between phase 1, 2, or 3, while co-routines are in the middle of running
-     * Phase 0 = start / instructions
-     * Phase 1 = training phase
-     * Phase 2 = break 
-     * Phase 3 = data taking phase
-     * Phase 4 = thank you screen / demographics survey reminder\
+     * Phase -1,-2,-3... = in-between phase 1, 2, or 3, while co-routines are in the middle of running
+     * Phase 0 = name input
+     * Phase 1 = start / instructions
+     * Phase 2 = training phase
+     * Phase 3 = break 
+     * Phase 4 = data taking phase
+     * Phase 5 = thank you screen / demographics survey reminder\
      * in_use = currently going through the change coroutine, has not shown next stimulus yet
      */
 
@@ -87,6 +81,9 @@ public class StimControl : MonoBehaviour
     private string log; // new line of data
     private int instrNum = 0; // index used to increment instructions
     private int posIndex, stimIndex; // indices for pos and stimuli respectively randomized later in code (need global scope since they're used in multiple functions)
+    public GameObject instrText; // text object for instructions
+    public GameObject trainingText; // text object for training
+    public TMP_InputField nameInputField; // UI object for name Input
 
     IEnumerator change()
     {
@@ -114,8 +111,27 @@ public class StimControl : MonoBehaviour
         in_use = false;
     }
 
+    void phase0()
+    {
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            logFile = dataPath + nameInputField.text + "rtData-" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".csv";
+            if (!Directory.Exists(dataPath))
+            {
+                Directory.CreateDirectory(dataPath);
+            }
+            File.WriteAllText(logFile, "CueShowTime,ObjShowTime,ReactionTime,Eccentricity,StimType,Guess,Correct\n");
 
-    void phase0() // start and instruction phase
+            Debug.Log($"Data file started for {nameInputField.text}");
+            GameObject.Find("Canvas").transform.position = GameObject.Find("Disappear").transform.position; // canvas disappears
+
+            phase = 1;
+            instrText.transform.position = GameObject.Find("textPos").transform.position;
+            return;
+        }
+    }
+
+    void phase1() // start and instruction phase
     {
         if (Input.GetKeyDown(KeyCode.Space) && instrNum == 0)
         {
@@ -147,14 +163,14 @@ public class StimControl : MonoBehaviour
         {
             instrText.GetComponent<TextMeshPro>().text = instrTextValues[instrNum];
             instrText.transform.position = GameObject.Find("Disappear").transform.position;
-            phase = 1;
+            phase = 2;
             StartCoroutine(change());
             start = false;
         }
     }
 
 
-    IEnumerator phase1() // training phase
+    IEnumerator phase2() // training phase
     {
         phase *= -1;
         if (!in_use)
@@ -196,7 +212,7 @@ public class StimControl : MonoBehaviour
                     trainingText.GetComponent<TextMeshPro>().text = "";
                     trainingText.transform.position = GameObject.Find("textPos").transform.position;
                     currentTrial = 1;
-                    phase = 2;
+                    phase = 3;
                     start = false;
                     yield break;
                 }
@@ -206,7 +222,7 @@ public class StimControl : MonoBehaviour
         phase *= -1;
     }
 
-    IEnumerator phase2()
+    IEnumerator phase3()
     {
         phase *= -1;
         trainingText.GetComponent<TextMeshPro>().text = $"Training has finished. The experiment will begin in {countdownTime} seconds";
@@ -218,11 +234,11 @@ public class StimControl : MonoBehaviour
             trainingText.GetComponent<TextMeshPro>().text = "";
             trainingText.transform.position = GameObject.Find("Disappear").transform.position;
             StartCoroutine(change());
-            phase = 3;
+            phase = 4;
             yield break;
         }
     }
-    void phase3()
+    void phase4()
     {
         if (!in_use)
         {
@@ -254,14 +270,14 @@ public class StimControl : MonoBehaviour
                 responseKey = "";
                 if (currentTrial > trials)
                 {
-                    phase = 4;
+                    phase = 5;
                     return;
                 }
                 StartCoroutine(change());
             }
         }
     }
-    IEnumerator phase4()
+    IEnumerator phase5()
     {
         phase *= -1;
         instrText.GetComponent<TextMeshPro>().text = "Thank you for taking data for us! Please take your demographics survey now";
@@ -273,17 +289,9 @@ public class StimControl : MonoBehaviour
 
     void Start()
     {
-        if (!Directory.Exists(dataPath))
-        {
-            Directory.CreateDirectory(dataPath);
-        }
-        File.WriteAllText(logFile, "CueShowTime,ObjShowTime,ReactionTime,Eccentricity,StimType,Guess,Correct\n");
-
-
         instrText = GameObject.Find("instrText");
         trainingText = GameObject.Find("trainingText");
-
-        instrText.transform.position = GameObject.Find("textPos").transform.position;
+        nameInputField = GameObject.Find("nameInput").GetComponent<TMP_InputField>(); ; // UI object for name Input
     }
 
     void Update()
@@ -299,25 +307,29 @@ public class StimControl : MonoBehaviour
         {
             return;
         }
-        else if(phase == 0) // in instructions / start phase
+        else if (phase == 0) // name input
         {
             phase0();
         }
-        else if (phase == 1) // in training phase
+        else if(phase == 1) // in instructions / start phase
         {
-            StartCoroutine(phase1());
+            phase1();
         }
-        else if (phase == 2) // break between training and data taking
+        else if (phase == 2) // in training phase
         {
             StartCoroutine(phase2());
         }
-        else if (phase == 3) // in data taking phase
+        else if (phase == 3) // break between training and data taking
         {
-            phase3();
+            StartCoroutine(phase3());
         }
-        else if (phase == 4) // thank you / demographics survey reminder
+        else if (phase == 4) // in data taking phase
         {
-            StartCoroutine(phase4());
+            phase4();
+        }
+        else if (phase == 5) // thank you / demographics survey reminder
+        {
+            StartCoroutine(phase5());
         }
     }
 }
