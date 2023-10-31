@@ -75,7 +75,7 @@ public class StimControl : MonoBehaviour
 
     //misc variables
     static string dataPath = Directory.GetCurrentDirectory() + "/Assets/Data/";
-    string logFile = dataPath + "rtData-" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".csv";
+    string logFile; // fileName, set in phase 0 after getting participant name
     Random rnd = new Random();
     private string responseKey = "";
     private string log; // new line of data
