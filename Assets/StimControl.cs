@@ -115,7 +115,7 @@ public class StimControl : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
-            logFile = dataPath + nameInputField.text + "rtData-" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".csv";
+            logFile = dataPath + nameInputField.text + "-rtData-" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".csv";
             if (!Directory.Exists(dataPath))
             {
                 Directory.CreateDirectory(dataPath);
@@ -126,6 +126,7 @@ public class StimControl : MonoBehaviour
             GameObject.Find("Canvas").transform.position = GameObject.Find("Disappear").transform.position; // canvas disappears
 
             phase = 1;
+            instrText.GetComponent<TextMeshPro>().text = instrTextValues[instrNum];
             instrText.transform.position = GameObject.Find("textPos").transform.position;
             return;
         }

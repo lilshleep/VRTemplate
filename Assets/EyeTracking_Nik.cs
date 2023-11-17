@@ -41,7 +41,7 @@ public class EyeTracking_Nik : MonoBehaviour {
     [Tooltip("Legacy - 10 dots without priors; Fast: 5 dots; One Dot: quickest, least accurate")]
     public VarjoEyeTracking.GazeCalibrationMode gazeCalibrationMode = VarjoEyeTracking.GazeCalibrationMode.Fast;
     [Tooltip("Keyboard shortcut to request calibration")]
-    public KeyCode calibrationKey = KeyCode.Space;
+    public KeyCode calibrationKey = KeyCode.Backslash;
 
     [Header("Gaze output filter")]
     [Tooltip("Standard: smoothing on gaze data; None: raw data")]
@@ -56,7 +56,7 @@ public class EyeTracking_Nik : MonoBehaviour {
     private static readonly string[] Columns = { "CaptureTime", "HeadsetPos", "HeadsetRotation", "CombinedGazeForward", 
         "FocusDistance", "FocusStability", "CalcXEccentricity", "CalcYEccentricity", "LeftForward", "RightForward", "LeftPosition", "RightPosition" };
     private static string VectorPrecision = "F6"; // preciison after decimal for vector printouts
-    private static string DegreePrecision = "F1"; // precision after decimal for calculated eccentricities in degrees
+    private static string DegreePrecision = "F6"; // precision after decimal for calculated eccentricities in degrees
 
 
     // Start is called before the first frame update
