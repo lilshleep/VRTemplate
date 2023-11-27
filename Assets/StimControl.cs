@@ -5,6 +5,7 @@ using Random = System.Random;
 using System.IO;
 using System;
 using TMPro;
+using Varjo.XR;
 
 /* TODO
  * add high score list
@@ -290,6 +291,8 @@ public class StimControl : MonoBehaviour
 
     void Start()
     {
+        VarjoEyeTracking.GazeCalibrationMode gazeCalibrationMode = VarjoEyeTracking.GazeCalibrationMode.Fast;
+        VarjoEyeTracking.RequestGazeCalibration(gazeCalibrationMode);
         instrText = GameObject.Find("instrText");
         trainingText = GameObject.Find("trainingText");
         nameInputField = GameObject.Find("nameInput").GetComponent<TMP_InputField>(); ; // UI object for name Input
