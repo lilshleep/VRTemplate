@@ -69,7 +69,7 @@ public class StimControl : MonoBehaviour
      * Phase 2 = training phase
      * Phase 3 = break 
      * Phase 4 = data taking phase
-     * Phase 5 = thank you screen / demographics survey reminder\
+     * Phase 5 = thank you screen / demographics survey reminder
      * in_use = currently going through the change coroutine, has not shown next stimulus yet
      */
 
@@ -223,7 +223,7 @@ public class StimControl : MonoBehaviour
         phase *= -1;
     }
 
-    IEnumerator phase3()
+    IEnumerator phase3() // break phase
     {
         phase *= -1;
         trainingText.GetComponent<TextMeshPro>().text = $"Training has finished. The experiment will begin in {countdownTime} seconds";
@@ -240,7 +240,7 @@ public class StimControl : MonoBehaviour
         }
     }
 
-    void phase4()
+    void phase4() // data taking phase
     {
         if (!in_use)
         {
@@ -279,8 +279,8 @@ public class StimControl : MonoBehaviour
             }
         }
     }
-    
-    IEnumerator phase5()
+
+    IEnumerator phase5() // thank you screen / demographics survey reminder
     {
         phase *= -1;
         instrText.GetComponent<TextMeshPro>().text = "Thank you for taking data for us! Please take your demographics survey now";
