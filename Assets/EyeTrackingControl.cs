@@ -61,8 +61,10 @@ public class EyeTrackingControl : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
+        // sets eye tracking parameters
         VarjoEyeTracking.SetGazeOutputFrequency(frequency);
         VarjoEyeTracking.SetGazeOutputFilterType(gazeFilterType);
+        // starts calibration
         CalibrateGaze();
     }
 
@@ -135,7 +137,7 @@ public class EyeTrackingControl : MonoBehaviour
         float z = data.gaze.forward.z;
         logData[1] = (Math.Atan(x / z) / Math.PI * 180).ToString(calcPrecision);
         logData[2] = (Math.Atan(y / z) / Math.PI * 180).ToString(calcPrecision);
-
+        
         // Combined gaze
         bool invalid = data.status == VarjoEyeTracking.GazeStatus.Invalid;
         logData[3] = invalid ? "" : data.gaze.forward.ToString(calcPrecision);

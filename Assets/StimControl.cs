@@ -23,7 +23,7 @@ using Varjo.XR;
 public class StimControl : MonoBehaviour
 {
     // independent variable being tested
-    // calculated for 10m distance from camera to deg0
+    // calculated for 0.5m distance from camera to deg0
     public string[] pos = { "deg0", "deg30", "deg-30" }; // different random positions available (Unity object names)
     public string[] ecc = { "0", "+30", "-30" }; // names to write to csv file, corresponding respectively to pos
     public string[] stimuli = { "Face1", "Face2", "Face3" }; // names of different stimuli
@@ -81,7 +81,7 @@ public class StimControl : MonoBehaviour
     private string responseKey = "";
     private string log; // new line of data
     private int instrNum = 0; // index used to increment instructions
-    private int posIndex, stimIndex; // indices for pos and stimuli respectively randomized later in code (need global scope since they're used in multiple functions)
+    private int ivIndex, stimIndex; // indices for pos and stimuli respectively randomized later in code (need global scope since they're used in multiple functions)
     public GameObject instrText; // text object for instructions
     public GameObject trainingText; // text object for training
     public TMP_InputField nameInputField; // UI object for name Input
@@ -95,7 +95,7 @@ public class StimControl : MonoBehaviour
         yield return new WaitForSecondsRealtime(cue_time); // Cue stays there for this long
 
         // randomizes stimulus every round
-        posIndex = rnd.Next(0, pos.Length);
+        ivIndex = rnd.Next(0, pos.Length);
         stimIndex = rnd.Next(0, stimuli.Length);
 
         // wait time between cue and stimulus
@@ -106,7 +106,7 @@ public class StimControl : MonoBehaviour
         yield return new WaitForSecondsRealtime(cueToStim_time);
 
         // shows stimulus
-        GameObject.Find(stimuli[stimIndex]).transform.position = GameObject.Find(pos[posIndex]).transform.position; // StimType appears
+        GameObject.Find(stimuli[stimIndex]).transform.position = GameObject.Find(pos[ivIndex]).transform.position; // StimType appears
         log += DateTimeOffset.Now.ToUnixTimeMilliseconds() + ","; // ObjShowTime
         start = true;
         in_use = false;
@@ -240,6 +240,7 @@ public class StimControl : MonoBehaviour
             yield break;
         }
     }
+
     void phase4()
     {
         if (!in_use)
@@ -253,7 +254,7 @@ public class StimControl : MonoBehaviour
                 if (start)
                 {
                     log += DateTimeOffset.Now.ToUnixTimeMilliseconds() + ","; // ReactionTime
-                    log += ecc[posIndex] + "," + stimuli[stimIndex] + "," + responseKey + ","; // independentVar, StimType, Guess
+                    log += ecc[ivIndex] + "," + stimuli[stimIndex] + "," + responseKey + ","; // independentVar, StimType, Guess
                     if (stimuli[stimIndex] == responseKey)
                     {
                         log += "True\n";
@@ -291,8 +292,6 @@ public class StimControl : MonoBehaviour
 
     void Start()
     {
-        VarjoEyeTracking.GazeCalibrationMode gazeCalibrationMode = VarjoEyeTracking.GazeCalibrationMode.Fast;
-        VarjoEyeTracking.RequestGazeCalibration(gazeCalibrationMode);
         instrText = GameObject.Find("instrText");
         trainingText = GameObject.Find("trainingText");
         nameInputField = GameObject.Find("nameInput").GetComponent<TMP_InputField>(); ; // UI object for name Input
@@ -315,7 +314,7 @@ public class StimControl : MonoBehaviour
         {
             phase0();
         }
-        else if(phase == 1) // in instructions / start phase
+        else if (phase == 1) // in instructions / start phase
         {
             phase1();
         }
