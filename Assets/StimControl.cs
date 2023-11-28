@@ -5,7 +5,6 @@ using Random = System.Random;
 using System.IO;
 using System;
 using TMPro;
-using Varjo.XR;
 
 /* TODO
  * add high score list
@@ -280,6 +279,7 @@ public class StimControl : MonoBehaviour
             }
         }
     }
+    
     IEnumerator phase5()
     {
         phase *= -1;
