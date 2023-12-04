@@ -7,17 +7,10 @@ using Varjo.XR;
 using UnityEngine.XR;
 using System.Linq;
 
-/*
-public methods:
-CalibrateGaze() -- calibrates using set mode
-StartLog() -- start logging eye tracking data
-EndLog() -- finish logging eye tracking data
-*/
-
 public class EyeTrackingControl : MonoBehaviour
 {
 
-    [Header("Main camera (under XR Rig)")]
+    [Header("Main camera (will be set automatically)")]
     public Camera xrCamera;
 
     // lets you see how many eye tracking datapoints are logged per second. Runs once
@@ -45,9 +38,9 @@ public class EyeTrackingControl : MonoBehaviour
     private VarjoEyeTracking.GazeOutputFrequency frequency = VarjoEyeTracking.GazeOutputFrequency.MaximumSupported;
 
     // stuff for logging data
+    public string fileName;
     private static readonly string[] Columns = { "CaptureTime", "CalcXEccentricity", 
-        "CalcYEccentricity", "CombinedGazeForward", "CombinedGazeOrigin", "Valid", 
-        "LeftForward", "RightForward", "LeftPosition", "RightPosition" };
+        "CalcYEccentricity", "Valid"};
     private static string calcPrecision = "F6"; // precision after decimal for calculations and tracking
     private const string ValidString = "VALID";
     private const string InvalidString = "INVALID";
@@ -56,11 +49,12 @@ public class EyeTrackingControl : MonoBehaviour
     public string customLogPath = "";
     private List<VarjoEyeTracking.GazeData> dataSinceLastUpdate;
     private StreamWriter writer = null;
-    private bool logging = false;
+    public bool logging = false;
 
     // Start is called before the first frame update
     private void Start()
     {
+        xrCamera = Camera.main; // gets the main camera
         // sets eye tracking parameters
         VarjoEyeTracking.SetGazeOutputFrequency(frequency);
         VarjoEyeTracking.SetGazeOutputFilterType(gazeFilterType);
@@ -138,22 +132,9 @@ public class EyeTrackingControl : MonoBehaviour
         logData[1] = (Math.Atan(x / z) / Math.PI * 180).ToString(calcPrecision);
         logData[2] = (Math.Atan(y / z) / Math.PI * 180).ToString(calcPrecision);
         
-        // Combined gaze
+        // Combined gaze validity
         bool invalid = data.status == VarjoEyeTracking.GazeStatus.Invalid;
-        logData[3] = invalid ? "" : data.gaze.forward.ToString(calcPrecision);
-        logData[4] = invalid ? "" : data.gaze.origin.ToString(calcPrecision);
-        logData[5] = invalid ? InvalidString : ValidString;
-
-        // left and right eye forward
-        bool leftInvalid = data.leftStatus == VarjoEyeTracking.GazeEyeStatus.Invalid;
-        logData[6] = leftInvalid ? "" : data.left.forward.ToString(calcPrecision);
-
-        bool rightInvalid = data.rightStatus == VarjoEyeTracking.GazeEyeStatus.Invalid;
-        logData[7] = rightInvalid ? "" : data.right.forward.ToString(calcPrecision);
-
-        // left and right eye position
-        logData[8] = leftInvalid ? "" : data.left.origin.ToString("F3");
-        logData[9] = rightInvalid ? "" : data.right.origin.ToString("F3");
+        logData[3] = invalid ? InvalidString : ValidString;
 
         Log(logData);
     }
@@ -175,19 +156,26 @@ public class EyeTrackingControl : MonoBehaviour
 
     public void StartLogging()
     {
+        // checks if logging was already started
         if (logging)
         {
             Debug.LogWarning("Logging was on when StartLogging was called. No new log was started.");
             return;
         }
 
+        // sets logging to true
         logging = true;
 
+        // creates log folder if none exists
         string logPath = useCustomLogPath ? customLogPath : Application.dataPath + "/Logs/";
-        Directory.CreateDirectory(logPath);
+        if (!Directory.Exists(logPath))
+        {
+            Directory.CreateDirectory(logPath);
+        }
 
+        // creates log file
         DateTime now = DateTime.Now;
-        string fileName = string.Format("{0}-{1:00}-{2:00}-{3:00}-{4:00}", now.Year, now.Month, now.Day, now.Hour, now.Minute);
+        fileName = "eyeTr-" + System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
         string path = logPath + fileName + ".csv";
         writer = new StreamWriter(path);
@@ -197,6 +185,7 @@ public class EyeTrackingControl : MonoBehaviour
         gazeTimer += Time.deltaTime;
     }
 
+    // stops logging
     void StopLogging()
     {
         if (!logging)
@@ -219,6 +208,53 @@ public class EyeTrackingControl : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        StopLogging();
+        // renames the file with the inputted participant name so that it's comparable with the rtData file
+        // Check if logging was enabled and if a custom path was used
+        if (!logging || (writer == null && !useCustomLogPath))
+        {
+            return;
+        }
+        if (writer != null)
+        {
+            writer.Flush();
+            writer.Close();
+            writer = null;
+        }
+        logging = false;
+        Debug.Log("Logging ended");
+
+        // Define the old and new file names
+        string logPath = useCustomLogPath ? customLogPath : Application.dataPath + "/Logs/";
+        string oldFileName = fileName + ".csv";
+
+        string newFileName = GameObject.Find("control").GetComponent<StimControl>().logFile;
+        int lastIndex = Math.Max(newFileName.LastIndexOf('/'), newFileName.LastIndexOf('\\'));
+        // If a slash or backslash is found, return the substring from just after it
+        if (lastIndex != -1)
+        {
+            newFileName =  newFileName.Substring(lastIndex + 1);
+        }
+        newFileName = newFileName.Replace("rtData", "eyeTr");
+
+        string oldFilePath = Path.Combine(logPath, oldFileName);
+        string newFilePath = Path.Combine(logPath, newFileName);
+
+        // Check if the old file exists
+        if (File.Exists(oldFilePath))
+        {
+            // Rename the file
+            File.Move(oldFilePath, newFilePath);
+            Debug.Log("Log file renamed to: " + newFilePath);
+            // Deletes the meta file created for it the old filepath. Unity should automatically create a new one.
+            string oldMetaFilePath = oldFilePath + ".meta";
+            if (File.Exists(oldMetaFilePath))
+            {
+                File.Delete(oldMetaFilePath);
+            }
+        }
+        else
+        {
+            Debug.LogError("Log file not found: " + oldFilePath);
+        }
     }
 }

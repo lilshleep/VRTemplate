@@ -9,9 +9,7 @@ EditorBuildSettings:
     path: Assets/OutdoorsScene.unity
     guid: 8124e5870f4fd4c779e7a5f994e84ad1
   m_configObjects:
-    Varjo.XR.Settings: {fileID: 11400000, guid: c786157221f92dd45a1b39bca04d0fe2,
+    Varjo.XR.Settings: {fileID: 11400000, guid: 4ed7850dce1cf39489732413180d946e,
       type: 2}
-    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: ce4f0a298e2c82044ab88aa4d27cbed8,
-      type: 2}
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 37f4fc7726fda2a4a91d7c2dc734f3c5,
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 035fcb1b9e03749478c5095e68bcc472,
       type: 2}
